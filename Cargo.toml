@@ -1,0 +1,26 @@
+[package]
+name = "oxidize"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+path = "src/main.rs"
+name = "oxidize"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+actix-session = "0.8.0"
+actix-web = "4.4.1"
+chrono = { version = "0.4.31", features = ["clock", "serde"] }
+dotenvy = "0.15.7"
+env_logger = "0.10.1"
+log = "0.4.20"
+serde = "1.0.195"
+serde_json = "1.0.111"
+sqlx = { version = "0.7.3", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
+tokio = "1.35.1"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["json", "env-filter"] }
+uuid = { version = "1.6.1", features = ["v4", "serde"] }

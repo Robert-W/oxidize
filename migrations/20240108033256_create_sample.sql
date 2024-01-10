@@ -1,0 +1,6 @@
+CREATE TABLE samples (
+  id uuid PRIMARY KEY,
+  name TEXT NOT NULL,
+  created TIMESTAMP default CURRENT_TIMESTAMP NOT NULL,
+  last_updated TIMESTAMP default CURRENT_TIMESTAMP NOT NULL
+);
