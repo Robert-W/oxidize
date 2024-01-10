@@ -13,7 +13,7 @@ pub fn all() -> impl Subscriber {
         .with_thread_ids(true)
         .with_line_number(true)
         .with_file(true)
-        .json()
+        .pretty()
         .with_filter(EnvFilter::from_default_env())
         .boxed();
 
