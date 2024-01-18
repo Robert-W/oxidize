@@ -12,6 +12,6 @@ while read -d "[[package]]" chunk; do
 
   # make sure both of these values are set
   if [[ -n "$name" && -n "$version" ]]; then
-    cargo build -p $name:$version
+    cargo build -p $name:$version --release
   fi
 done <<< $lockfile
