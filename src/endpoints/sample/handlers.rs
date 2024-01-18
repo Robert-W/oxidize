@@ -3,7 +3,7 @@ use actix_web::{
     web::{Data, Form, Path, Json},
     Error, HttpResponse, Responder,
 };
-use log::error;
+use tracing::error;
 use sqlx::PgPool;
 use uuid::Uuid;
 
