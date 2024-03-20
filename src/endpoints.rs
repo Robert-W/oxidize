@@ -8,7 +8,10 @@ async fn healthcheck() -> StatusCode {
 }
 
 pub fn configure(pool: Pool<Postgres>) -> Router {
-    Router::new()
-        .route("/healthcheck", get(healthcheck))
-        .nest("/sample", sample::configure(pool))
+    Router::new().nest(
+        "/api",
+        Router::new()
+            .route("/healthcheck", get(healthcheck))
+            .nest("/sample", sample::configure(pool)),
+    )
 }
