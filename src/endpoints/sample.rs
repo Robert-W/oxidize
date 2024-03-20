@@ -1,17 +1,20 @@
-use actix_web::web;
+use axum::{
+    routing::{delete, get, post, put},
+    Router,
+};
+use sqlx::{Pool, Postgres};
 
 mod forms;
 mod handlers;
 mod model;
 mod responses;
 
-pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::scope("/sample")
-            .service(handlers::create_sample)
-            .service(handlers::read_sample)
-            .service(handlers::list_samples)
-            .service(handlers::update_sample)
-            .service(handlers::delete_sample),
-    );
+pub fn configure(pool: Pool<Postgres>) -> Router {
+    Router::new()
+        .route("/", get(handlers::list))
+        .route("/", post(handlers::create))
+        .route("/:id", get(handlers::read))
+        .route("/:id", put(handlers::update))
+        .route("/:id", delete(handlers::delete))
+        .with_state(pool.clone())
 }

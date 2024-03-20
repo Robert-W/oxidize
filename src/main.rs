@@ -2,12 +2,13 @@ mod db;
 mod endpoints;
 mod subscribers;
 
-use actix_web::{main, web, App, HttpServer};
+use axum::{serve, Router};
 use db::postgres;
 use dotenvy::dotenv;
+use tokio::net::TcpListener;
 
-#[main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() {
     // Load our environment variables
     dotenv().ok();
 
@@ -26,13 +27,15 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Migrations failed to run");
 
-    // Create our HTTP server
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(pool.clone()))
-            .configure(endpoints::configure)
-    })
-    .bind(("0.0.0.0", 3000))?
-    .run()
-    .await
+    // Setup Axum
+    let app = Router::new()
+        .nest("/api", endpoints::configure(pool));
+
+    let listener = TcpListener::bind("0.0.0.0:3000")
+        .await
+        .expect("Unable to bind to TcpListener");
+
+    serve(listener, app)
+        .await
+        .expect("Unable to start the server");
 }

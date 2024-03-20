@@ -1,10 +1,10 @@
-use actix_web::{
-    delete, get, post, put,
-    web::{Data, Form, Path, Json},
-    Error, HttpResponse, Responder,
+use axum::{
+    extract::{Form, Path, State},
+    http::StatusCode,
+    Json,
 };
-use tracing::error;
 use sqlx::PgPool;
+use tracing::error;
 use uuid::Uuid;
 
 use super::{
@@ -13,64 +13,69 @@ use super::{
     responses::SampleResponse,
 };
 
-#[post("/")]
-pub async fn create_sample(
-    form: Form<CreateSample>,
-    pool: Data<PgPool>,
-) -> Result<SampleResponse, Error> {
-    match Sample::create(&pool, form.into_inner()).await {
-        Ok(sample) => Ok(SampleResponse::from(sample)),
-        Err(err) => {
-            error!("Encountered unexpected error on Sample::create. {:?}", err);
-            Err(actix_web::error::ErrorInternalServerError(err))
-        }
-    }
-}
-
-#[get("/{id}")]
-async fn read_sample(id: Path<Uuid>, pool: Data<PgPool>) -> Result<SampleResponse, Error> {
-    match Sample::read(&pool, &id).await {
-        Ok(sample) => Ok(SampleResponse::from(sample)),
-        Err(err) => {
-            error!("Encountered unexpected error on Sample::read. {:?}", err);
-            Err(actix_web::error::ErrorNotFound(err))
-        }
-    }
-}
-
-#[get("/")]
-async fn list_samples(pool: Data<PgPool>) -> Result<Json<Vec<SampleResponse>>, Error> {
+pub async fn list(State(pool): State<PgPool>) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
     match Sample::list(&pool).await {
         Ok(samples) => {
-            let response = samples.into_iter().map(|s| SampleResponse::from(s)).collect();
+            let response = samples
+                .into_iter()
+                .map(|s| SampleResponse::from(s))
+                .collect();
 
             Ok(Json(response))
-        },
+        }
         Err(err) => {
             error!("Encountered unexpected error on Sample::list. {:?}", err);
-            Err(actix_web::error::ErrorInternalServerError(err))
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
-#[put("/{id}")]
-async fn update_sample(form: Form<UpdateSample>, id: Path<Uuid>, pool: Data<PgPool>) -> Result<SampleResponse, Error> {
+pub async fn create(
+    State(pool): State<PgPool>,
+    Form(form): Form<CreateSample>,
+) -> Result<Json<SampleResponse>, StatusCode> {
+    match Sample::create(&pool, form).await {
+        Ok(sample) => Ok(Json(SampleResponse::from(sample))),
+        Err(err) => {
+            error!("Encountered unexpected error on Sample::create. {:?}", err);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+pub async fn read(
+    State(pool): State<PgPool>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<SampleResponse>, StatusCode> {
+    match Sample::read(&pool, &id).await {
+        Ok(sample) => Ok(Json(SampleResponse::from(sample))),
+        Err(err) => {
+            error!("Encountered unexpected error on Sample::read. {:?}", err);
+            Err(StatusCode::NOT_FOUND)
+        }
+    }
+}
+
+pub async fn update(
+    State(pool): State<PgPool>,
+    Path(id): Path<Uuid>,
+    Form(form): Form<UpdateSample>,
+) -> Result<Json<SampleResponse>, StatusCode> {
     // TODO
     // 200/204 for updating an existing resource
     // 201 if a new user is created
-    match Sample::update(&pool, &id, form.into_inner()).await {
-        Ok(sample) => Ok(SampleResponse::from(sample)),
+    match Sample::update(&pool, &id, form).await {
+        Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
             error!("Encountered unexpected error on Sample::update. {:?}", err);
-            Err(actix_web::error::ErrorInternalServerError(err))
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
-#[delete("/{id}")]
-async fn delete_sample(id: Path<Uuid>, pool: Data<PgPool>) -> impl Responder {
+pub async fn delete(Path(id): Path<Uuid>, State(pool): State<PgPool>) -> StatusCode {
     match Sample::delete(&pool, &id).await {
-        Ok(_) => HttpResponse::NoContent(),
-        Err(_) => HttpResponse::NoContent(),
+        Ok(_) => StatusCode::NO_CONTENT,
+        Err(_) => StatusCode::NO_CONTENT,
     }
 }

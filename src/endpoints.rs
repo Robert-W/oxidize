@@ -1,16 +1,14 @@
 mod sample;
 
-use actix_web::{get, web, HttpResponse, Responder};
+use axum::{http::StatusCode, routing::get, Router};
+use sqlx::{Pool, Postgres};
 
-#[get("/healthcheck")]
-async fn healthcheck() -> impl Responder {
-    HttpResponse::Ok()
+async fn healthcheck() -> StatusCode {
+    StatusCode::OK
 }
 
-pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::scope("/api")
-            .service(healthcheck)
-            .configure(sample::configure),
-    );
+pub fn configure(pool: Pool<Postgres>) -> Router {
+    Router::new()
+        .route("/healthcheck", get(healthcheck))
+        .nest("/sample", sample::configure(pool))
 }
