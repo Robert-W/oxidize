@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Form, Path, State},
+    extract::{Path, State},
     http::StatusCode,
     Json,
 };
@@ -32,9 +32,9 @@ pub async fn list(State(pool): State<PgPool>) -> Result<Json<Vec<SampleResponse>
 
 pub async fn create(
     State(pool): State<PgPool>,
-    Form(form): Form<CreateSample>,
+    Json(body): Json<CreateSample>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
-    match Sample::create(&pool, form).await {
+    match Sample::create(&pool, body).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
             error!("Encountered unexpected error on Sample::create. {:?}", err);
@@ -59,12 +59,12 @@ pub async fn read(
 pub async fn update(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
-    Form(form): Form<UpdateSample>,
+    Json(body): Json<UpdateSample>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
     // TODO
     // 200/204 for updating an existing resource
     // 201 if a new user is created
-    match Sample::update(&pool, &id, form).await {
+    match Sample::update(&pool, &id, body).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
             error!("Encountered unexpected error on Sample::update. {:?}", err);

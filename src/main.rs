@@ -1,7 +1,8 @@
 mod db;
-mod endpoints;
+mod api;
 mod subscribers;
 
+use axum::Router;
 use db::postgres;
 use dotenvy::dotenv;
 use tokio::net::TcpListener;
@@ -27,11 +28,15 @@ async fn main() {
         .expect("Migrations failed to run");
 
     // Setup Axum
+    let router = Router::new()
+        .nest("/api", api::routes())
+        .with_state(pool);
+
     let listener = TcpListener::bind("0.0.0.0:3000")
         .await
         .expect("Unable to bind to TcpListener");
 
-    axum::serve(listener, endpoints::configure(pool))
+    axum::serve(listener, router)
         .await
         .expect("Unable to start the server");
 }
