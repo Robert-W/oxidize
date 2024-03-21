@@ -1,7 +1,13 @@
 pub mod common;
 
-use axum::{body::Body, extract::Request, http::{self, StatusCode}, Router};
+use axum::{
+    body::Body,
+    extract::Request,
+    http::{self, StatusCode},
+    Router,
+};
 use common::get_pool;
+use http_body_util::BodyExt;
 use oxidize::api;
 use serde_json::{json, Value};
 use sqlx::{Pool, Postgres};
@@ -34,16 +40,21 @@ mod sample_tests {
     pub async fn create() {
         let pool = get_pool().await;
         let app = build_router(pool);
+        let input = json!({ "name": "scrappy" });
+        let json_string = serde_json::to_string(&input).unwrap();
 
-        // let request = Request::builder()
-        //     .method(http::Method::POST)
-        //     .uri("/api/sample")
-        //     .body(
-        //         Body::from(
-        //             serde_json::from_value(json!({ "name": "scrappy" })).unwrap()
-        //         )
-        //     )
-        //     .unwrap();
+        let request = Request::builder()
+            .method(http::Method::POST)
+            .header("Content-Type", "application/json")
+            .uri("/api/sample")
+            .body(Body::from(json_string))
+            .unwrap();
 
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let output: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(output["name"], "scrappy");
     }
 }
