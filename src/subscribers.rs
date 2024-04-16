@@ -14,8 +14,7 @@ pub fn all() -> impl Subscriber {
         .with_line_number(true)
         .with_file(true)
         .pretty()
-        .with_filter(EnvFilter::from_default_env())
-        .boxed();
+        .with_filter(EnvFilter::from_default_env());
 
     tracing_subscriber::registry::Registry::default().with(default_layer)
 }
