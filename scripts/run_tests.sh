@@ -17,7 +17,7 @@ sqlx database create
 sqlx migrate run
 
 # Insert seed data
-sqlx migrate run --source tests/fixtures --ignore-missing
+sqlx migrate run --source src/tests/fixtures --ignore-missing
 
 # Run our tests
 cargo test
