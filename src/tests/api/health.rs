@@ -1,14 +1,8 @@
-pub mod common;
-
-use axum::{
-    body::Body,
-    extract::Request,
-    http::StatusCode,
-    Router,
-};
-use common::get_pool;
-use oxidize::api;
+use axum::{body::Body, extract::Request, http::StatusCode, Router};
 use tower::ServiceExt;
+
+use crate::api;
+use crate::state::AppState;
 
 #[cfg(test)]
 mod healthcheck_tests {
@@ -16,11 +10,11 @@ mod healthcheck_tests {
 
     #[tokio::test]
     pub async fn healthcheck() {
-        let pool = get_pool().await;
-        let app = Router::new().nest("/api", api::routes()).with_state(pool);
+        let state = AppState::new().await.unwrap();
+        let app = Router::new().nest("/api", api::routes()).with_state(state);
 
         let request = Request::builder()
-            .uri("/api/healthcheck")
+            .uri("/api/health")
             .body(Body::empty())
             .unwrap();
 

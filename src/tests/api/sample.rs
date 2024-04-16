@@ -1,23 +1,21 @@
-pub mod common;
-
 use axum::{
     body::Body,
     extract::Request,
     http::{self, StatusCode},
     Router,
 };
-use common::get_pool;
 use http_body_util::BodyExt;
-use oxidize::api;
 use serde_json::{json, Value};
-use sqlx::{Pool, Postgres};
 use tower::ServiceExt;
+
+use crate::api;
+use crate::state::AppState;
 
 // NOTE: Hardcoded ids and/or names in this file come
 // from ./fixtures/20240109021054_insert_samples.sql
 
-fn build_router(pool: Pool<Postgres>) -> Router {
-    Router::new().nest("/api", api::routes()).with_state(pool)
+fn build_router(state: AppState) -> Router {
+    Router::new().nest("/api", api::routes()).with_state(state)
 }
 
 #[cfg(test)]
@@ -26,8 +24,8 @@ mod sample_tests {
 
     #[tokio::test]
     pub async fn create() {
-        let pool = get_pool().await;
-        let app = build_router(pool);
+        let state = AppState::new().await.unwrap();
+        let app = build_router(state);
         let input = json!({ "name": "scrappy" });
         let json_string = serde_json::to_string(&input).unwrap();
 
@@ -48,8 +46,8 @@ mod sample_tests {
 
     #[tokio::test]
     pub async fn read() {
-        let pool = get_pool().await;
-        let app = build_router(pool);
+        let state = AppState::new().await.unwrap();
+        let app = build_router(state);
         let id = "0ef309be-dd16-447d-84c1-ec47cd8c1a8c";
 
         let request = Request::builder()
@@ -67,8 +65,8 @@ mod sample_tests {
 
     #[tokio::test]
     pub async fn list() {
-        let pool = get_pool().await;
-        let app = build_router(pool);
+        let state = AppState::new().await.unwrap();
+        let app = build_router(state);
 
         let request = Request::builder()
             .uri("/api/sample")
@@ -87,8 +85,8 @@ mod sample_tests {
 
     #[tokio::test]
     pub async fn update() {
-        let pool = get_pool().await;
-        let app = build_router(pool);
+        let state = AppState::new().await.unwrap();
+        let app = build_router(state);
         let id = "0ef309be-dd16-447d-84c1-ec47cd8c1a8c";
         let input = json!({ "name": "steve" });
         let json_string = serde_json::to_string(&input).unwrap();
@@ -110,8 +108,8 @@ mod sample_tests {
 
     #[tokio::test]
     pub async fn delete() {
-        let pool = get_pool().await;
-        let app = build_router(pool.clone());
+        let state = AppState::new().await.unwrap();
+        let app = build_router(state.clone());
         let id = "93ee5b24-8c2d-42e7-9ed8-6f4eca7cad9a";
 
         let request = Request::builder()
@@ -130,7 +128,7 @@ mod sample_tests {
             .body(Body::empty())
             .unwrap();
 
-        let app = build_router(pool.clone());
+        let app = build_router(state);
         let response = app.oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }

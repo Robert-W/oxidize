@@ -20,3 +20,4 @@ VALUES
     '93ee5b24-8c2d-42e7-9ed8-6f4eca7cad9a',
     'fred'
   );
+
