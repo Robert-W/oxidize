@@ -3,9 +3,10 @@ use axum::{
     http::StatusCode,
     Json,
 };
-use sqlx::PgPool;
 use tracing::error;
 use uuid::Uuid;
+
+use crate::state::AppState;
 
 use super::{
     forms::{CreateSample, UpdateSample},
@@ -13,8 +14,8 @@ use super::{
     responses::SampleResponse,
 };
 
-pub async fn list(State(pool): State<PgPool>) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
-    match Sample::list(&pool).await {
+pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
+    match Sample::list(&state.pool).await {
         Ok(samples) => {
             let response = samples
                 .into_iter()
@@ -31,10 +32,10 @@ pub async fn list(State(pool): State<PgPool>) -> Result<Json<Vec<SampleResponse>
 }
 
 pub async fn create(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Json(body): Json<CreateSample>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
-    match Sample::create(&pool, body).await {
+    match Sample::create(&state.pool, body).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
             error!("Encountered unexpected error on Sample::create. {:?}", err);
@@ -44,10 +45,10 @@ pub async fn create(
 }
 
 pub async fn read(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
-    match Sample::read(&pool, &id).await {
+    match Sample::read(&state.pool, &id).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
             error!("Encountered unexpected error on Sample::read. {:?}", err);
@@ -57,14 +58,14 @@ pub async fn read(
 }
 
 pub async fn update(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(body): Json<UpdateSample>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
     // TODO
     // 200/204 for updating an existing resource
     // 201 if a new user is created
-    match Sample::update(&pool, &id, body).await {
+    match Sample::update(&state.pool, &id, body).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
             error!("Encountered unexpected error on Sample::update. {:?}", err);
@@ -73,8 +74,8 @@ pub async fn update(
     }
 }
 
-pub async fn delete(Path(id): Path<Uuid>, State(pool): State<PgPool>) -> StatusCode {
-    match Sample::delete(&pool, &id).await {
+pub async fn delete(Path(id): Path<Uuid>, State(state): State<AppState>) -> StatusCode {
+    match Sample::delete(&state.pool, &id).await {
         Ok(_) => StatusCode::NO_CONTENT,
         Err(_) => StatusCode::NO_CONTENT,
     }

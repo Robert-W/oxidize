@@ -1,15 +1,16 @@
 use axum::{
     routing::{delete, get, post, put},
-    Router
+    Router,
 };
-use sqlx::{Pool, Postgres};
+
+use crate::state::AppState;
 
 mod forms;
 mod handlers;
 mod model;
 mod responses;
 
-pub fn routes() -> Router<Pool<Postgres>> {
+pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/", get(handlers::list))
         .route("/", post(handlers::create))

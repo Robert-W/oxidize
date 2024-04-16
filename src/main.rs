@@ -1,10 +1,14 @@
-mod db;
 mod api;
+mod db;
+mod state;
 mod subscribers;
 
+// #[cfg(test)]
+mod tests;
+
 use axum::Router;
-use db::postgres;
 use dotenvy::dotenv;
+use state::AppState;
 use tokio::net::TcpListener;
 
 #[tokio::main]
@@ -15,22 +19,19 @@ async fn main() {
     // Initialize tracing
     tracing::subscriber::set_global_default(subscribers::all()).unwrap();
 
-    // Connect to our database
-    let pg_conn_string = postgres::get_connection_string();
-    let pool = postgres::create_pool(&pg_conn_string)
-        .await
-        .expect("Unable to connect to postgres");
+    // Construct our AppState
+    let app_state = AppState::new().await.expect("Unable to create app state");
 
     // Run migrations with out datbase
     sqlx::migrate!()
-        .run(&pool)
+        .run(&app_state.pool)
         .await
         .expect("Migrations failed to run");
 
     // Setup Axum
     let router = Router::new()
         .nest("/api", api::routes())
-        .with_state(pool);
+        .with_state(app_state);
 
     let listener = TcpListener::bind("0.0.0.0:3000")
         .await
