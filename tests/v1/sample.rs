@@ -38,7 +38,7 @@ mod sample_tests {
         assert_eq!(res.status(), StatusCode::OK);
 
         let response = res.json::<serde_json::Value>().await.unwrap();
-        assert_eq!(response["name"], "shaggy");
+        assert_eq!(response["id"], id);
     }
 
     #[tokio::test]

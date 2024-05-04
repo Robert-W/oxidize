@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: walrus_glitter
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+volumes:
+  db:
+
