@@ -56,8 +56,10 @@ mod sample_tests {
 
         let response = res.json::<serde_json::Value>().await.unwrap();
         let results = response.as_array().unwrap();
-        // 5 resources are inserted via fixtures
-        assert!(results.len() >= 5);
+        // 5 resources are inserted via fixtures, however we create/delete
+        // resources in this suite of tests. We never delete more then one,
+        // so ensuring we have at least 4 is fine
+        assert!(results.len() >= 4);
     }
 
     #[tokio::test]
