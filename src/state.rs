@@ -9,8 +9,7 @@ pub(crate) struct AppState {
 
 impl AppState {
     pub async fn new() -> anyhow::Result<AppState> {
-        let connection_string = postgres::get_connection_string();
-        let pool = postgres::create_pool(&connection_string).await?;
+        let pool = postgres::create_pool().await?;
 
         Ok(AppState { pool })
     }
