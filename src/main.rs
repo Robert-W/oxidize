@@ -3,9 +3,6 @@ mod db;
 mod observability;
 mod state;
 
-// #[cfg(test)]
-mod tests;
-
 use dotenvy::dotenv;
 use state::AppState;
 use tokio::net::TcpListener;

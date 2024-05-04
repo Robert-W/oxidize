@@ -13,5 +13,5 @@ sqlx migrate add <migration-name>
 From root, run:
 
 ```bash
-sqlx migrate add --source test/fixtures <migration-name>
+sqlx migrate add --source tests/fixtures <migration-name>
 ```
