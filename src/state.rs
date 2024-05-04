@@ -3,7 +3,7 @@ use sqlx::{Pool, Postgres};
 use crate::db::postgres;
 
 #[derive(Clone)]
-pub struct AppState {
+pub(crate) struct AppState {
     pub pool: Pool<Postgres>,
 }
 

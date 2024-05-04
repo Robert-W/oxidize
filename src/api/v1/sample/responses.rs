@@ -10,7 +10,7 @@ use uuid::Uuid;
 use super::model::Sample;
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct SampleResponse {
+pub(crate) struct SampleResponse {
     pub id: Uuid,
     pub name: String,
     pub created: NaiveDateTime,

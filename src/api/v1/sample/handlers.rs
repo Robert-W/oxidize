@@ -1,3 +1,4 @@
+use crate::state::AppState;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -6,15 +7,13 @@ use axum::{
 use tracing::error;
 use uuid::Uuid;
 
-use crate::state::AppState;
-
 use super::{
     forms::{CreateSample, UpdateSample},
     model::Sample,
     responses::SampleResponse,
 };
 
-pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
+pub(crate) async fn list(State(state): State<AppState>) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
     match Sample::list(&state.pool).await {
         Ok(samples) => {
             let response = samples
@@ -31,7 +30,7 @@ pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<SampleRespon
     }
 }
 
-pub async fn create(
+pub(crate) async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreateSample>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
@@ -44,7 +43,7 @@ pub async fn create(
     }
 }
 
-pub async fn read(
+pub(crate) async fn read(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<SampleResponse>, StatusCode> {
@@ -57,7 +56,7 @@ pub async fn read(
     }
 }
 
-pub async fn update(
+pub(crate) async fn update(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(body): Json<UpdateSample>,
@@ -74,7 +73,7 @@ pub async fn update(
     }
 }
 
-pub async fn delete(Path(id): Path<Uuid>, State(state): State<AppState>) -> StatusCode {
+pub(crate) async fn delete(Path(id): Path<Uuid>, State(state): State<AppState>) -> StatusCode {
     match Sample::delete(&state.pool, &id).await {
         Ok(_) => StatusCode::NO_CONTENT,
         Err(_) => StatusCode::NO_CONTENT,

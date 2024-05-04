@@ -1,15 +1,26 @@
-mod sample;
+mod v1;
 
-use axum::{http::StatusCode, routing::get, Router};
-
+use crate::observability::otel;
 use crate::state::AppState;
+use axum::{http::StatusCode, routing::get, Router};
+use tower::ServiceBuilder;
 
-async fn health() -> StatusCode {
-    StatusCode::OK
+pub(crate) fn router() -> Router<AppState> {
+    Router::new()
+        .merge(global_routes())
+        .merge(versioned_routes())
+        .layer(ServiceBuilder::new().layer(otel::layer()))
 }
 
-pub fn routes() -> Router<AppState> {
-    Router::new()
-        .route("/health", get(health))
-        .nest("/sample", sample::routes())
+fn global_routes() -> Router<AppState> {
+    Router::new().route("/health", get(health))
+}
+
+fn versioned_routes() -> Router<AppState> {
+    Router::new().nest("/v/1", v1::routes())
+}
+
+/// Simple healthcheck function we'll use with load balanver configurations
+async fn health() -> StatusCode {
+    StatusCode::OK
 }
