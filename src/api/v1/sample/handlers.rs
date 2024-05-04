@@ -13,7 +13,9 @@ use super::{
     responses::SampleResponse,
 };
 
-pub(crate) async fn list(State(state): State<AppState>) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
+pub(crate) async fn list(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
     match Sample::list(&state.pool).await {
         Ok(samples) => {
             let response = samples

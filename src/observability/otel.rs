@@ -21,7 +21,7 @@ pub(crate) fn layer(
 /// server. You also want to make all attributes you intend to record values
 /// for at a leter point in time.
 #[derive(Clone, Copy)]
-pub (crate) struct OtelMakeSpan;
+pub(crate) struct OtelMakeSpan;
 
 impl<T> MakeSpan<T> for OtelMakeSpan {
     fn make_span(&mut self, request: &Request<T>) -> Span {
@@ -61,7 +61,7 @@ fn get_context(headers: &HeaderMap) -> Context {
 
 /// Update the status code and other interesting fields in the response
 #[derive(Clone, Copy)]
-pub (crate) struct OtelOnResponse;
+pub(crate) struct OtelOnResponse;
 
 impl<T> OnResponse<T> for OtelOnResponse {
     fn on_response(self, response: &Response<T>, _latency: Duration, span: &Span) {
