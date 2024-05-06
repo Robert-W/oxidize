@@ -82,7 +82,6 @@ mod sample_tests {
         assert_eq!(response["name"], "steve");
     }
 
-
     #[tokio::test]
     async fn delete() {
         let id = "93ee5b24-8c2d-42e7-9ed8-6f4eca7cad9a";
