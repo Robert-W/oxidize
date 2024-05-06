@@ -13,6 +13,7 @@ use super::{
     responses::SampleResponse,
 };
 
+#[tracing::instrument(skip(state))]
 pub(crate) async fn list(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
@@ -32,6 +33,7 @@ pub(crate) async fn list(
     }
 }
 
+#[tracing::instrument(skip(state))]
 pub(crate) async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreateSample>,
@@ -45,6 +47,7 @@ pub(crate) async fn create(
     }
 }
 
+#[tracing::instrument(skip(state))]
 pub(crate) async fn read(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -58,6 +61,7 @@ pub(crate) async fn read(
     }
 }
 
+#[tracing::instrument(skip(state))]
 pub(crate) async fn update(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -75,6 +79,7 @@ pub(crate) async fn update(
     }
 }
 
+#[tracing::instrument(skip(state))]
 pub(crate) async fn delete(Path(id): Path<Uuid>, State(state): State<AppState>) -> StatusCode {
     match Sample::delete(&state.pool, &id).await {
         Ok(_) => StatusCode::NO_CONTENT,

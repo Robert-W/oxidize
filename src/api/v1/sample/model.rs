@@ -14,6 +14,7 @@ pub(crate) struct Sample {
 }
 
 impl Sample {
+    #[tracing::instrument(skip(pool))]
     pub(crate) async fn create(pool: &PgPool, form: CreateSample) -> Result<Sample, sqlx::Error> {
         let timestamp = Utc::now();
 
@@ -33,6 +34,7 @@ VALUES ($1, $2, $3, $4) RETURNING *
         Ok(sample)
     }
 
+    #[tracing::instrument(skip(pool))]
     pub(crate) async fn read(pool: &PgPool, id: &Uuid) -> Result<Sample, sqlx::Error> {
         let sample: Sample = sqlx::query_as("SELECT * FROM samples WHERE id = $1")
             .bind(id)
@@ -42,6 +44,7 @@ VALUES ($1, $2, $3, $4) RETURNING *
         Ok(sample)
     }
 
+    #[tracing::instrument(skip(pool))]
     pub(crate) async fn list(pool: &PgPool) -> Result<Vec<Sample>, sqlx::Error> {
         let samples: Vec<Sample> = sqlx::query_as("SELECT * FROM samples")
             .fetch_all(pool)
@@ -50,6 +53,7 @@ VALUES ($1, $2, $3, $4) RETURNING *
         Ok(samples)
     }
 
+    #[tracing::instrument(skip(pool))]
     pub(crate) async fn update(
         pool: &PgPool,
         id: &Uuid,
@@ -67,6 +71,7 @@ VALUES ($1, $2, $3, $4) RETURNING *
         Ok(sample)
     }
 
+    #[tracing::instrument(skip(pool))]
     pub(crate) async fn delete(pool: &PgPool, id: &Uuid) -> Result<(), sqlx::Error> {
         sqlx::query("DELETE from samples WHERE id = $1")
             .bind(id)

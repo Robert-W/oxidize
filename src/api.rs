@@ -21,6 +21,7 @@ fn versioned_routes() -> Router<AppState> {
 }
 
 /// Simple healthcheck function we'll use with load balanver configurations
+#[tracing::instrument]
 async fn health() -> StatusCode {
     StatusCode::OK
 }
