@@ -27,7 +27,7 @@ pub(crate) async fn list(
             Ok(Json(response))
         }
         Err(err) => {
-            error!("Encountered unexpected error on Sample::list. {:?}", err);
+            error!({ exception.message = %err }, "Unexpected error on Sample::list");
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -41,7 +41,7 @@ pub(crate) async fn create(
     match Sample::create(&state.pool, body).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
-            error!("Encountered unexpected error on Sample::create. {:?}", err);
+            error!({ exception.message = %err }, "Unexpected error on Sample::create");
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -55,7 +55,7 @@ pub(crate) async fn read(
     match Sample::read(&state.pool, &id).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
-            error!("Encountered unexpected error on Sample::read. {:?}", err);
+            error!({ exception.message = %err }, "Unexpected error on Sample::read");
             Err(StatusCode::NOT_FOUND)
         }
     }
@@ -73,7 +73,7 @@ pub(crate) async fn update(
     match Sample::update(&state.pool, &id, body).await {
         Ok(sample) => Ok(Json(SampleResponse::from(sample))),
         Err(err) => {
-            error!("Encountered unexpected error on Sample::update. {:?}", err);
+            error!({ exception.message = %err }, "Unexpected error on Sample::update");
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -83,6 +83,9 @@ pub(crate) async fn update(
 pub(crate) async fn delete(Path(id): Path<Uuid>, State(state): State<AppState>) -> StatusCode {
     match Sample::delete(&state.pool, &id).await {
         Ok(_) => StatusCode::NO_CONTENT,
-        Err(_) => StatusCode::NO_CONTENT,
+        Err(err) => {
+            error!({ exception.message = %err }, "Unexpected error on Sample::delete");
+            StatusCode::NO_CONTENT
+        }
     }
 }
