@@ -1,4 +1,5 @@
-use crate::state::AppState;
+pub use crate::state::AppState;
+
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -10,21 +11,15 @@ use uuid::Uuid;
 use super::{
     forms::{CreateSample, UpdateSample},
     model::Sample,
-    responses::SampleResponse,
 };
 
 #[tracing::instrument(skip(state))]
 pub(crate) async fn list(
     State(state): State<AppState>,
-) -> Result<Json<Vec<SampleResponse>>, StatusCode> {
+) -> Result<Json<Vec<Sample>>, StatusCode> {
     match Sample::list(&state.pool).await {
         Ok(samples) => {
-            let response = samples
-                .into_iter()
-                .map(|s| SampleResponse::from(s))
-                .collect();
-
-            Ok(Json(response))
+            Ok(Json(samples))
         }
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::list");
@@ -37,9 +32,9 @@ pub(crate) async fn list(
 pub(crate) async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreateSample>,
-) -> Result<Json<SampleResponse>, StatusCode> {
+) -> Result<Json<Sample>, StatusCode> {
     match Sample::create(&state.pool, body).await {
-        Ok(sample) => Ok(Json(SampleResponse::from(sample))),
+        Ok(sample) => Ok(Json(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::create");
             Err(StatusCode::INTERNAL_SERVER_ERROR)
@@ -51,9 +46,9 @@ pub(crate) async fn create(
 pub(crate) async fn read(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-) -> Result<Json<SampleResponse>, StatusCode> {
+) -> Result<Json<Sample>, StatusCode> {
     match Sample::read(&state.pool, &id).await {
-        Ok(sample) => Ok(Json(SampleResponse::from(sample))),
+        Ok(sample) => Ok(Json(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::read");
             Err(StatusCode::NOT_FOUND)
@@ -66,12 +61,12 @@ pub(crate) async fn update(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(body): Json<UpdateSample>,
-) -> Result<Json<SampleResponse>, StatusCode> {
+) -> Result<Json<Sample>, StatusCode> {
     // TODO
     // 200/204 for updating an existing resource
     // 201 if a new user is created
     match Sample::update(&state.pool, &id, body).await {
-        Ok(sample) => Ok(Json(SampleResponse::from(sample))),
+        Ok(sample) => Ok(Json(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::update");
             Err(StatusCode::INTERNAL_SERVER_ERROR)
