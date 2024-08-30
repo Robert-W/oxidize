@@ -1,3 +1,4 @@
+use crate::api::{errors::ApiError, response::ApiResponse};
 pub use crate::state::AppState;
 
 use axum::{
@@ -5,6 +6,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use serde_json::json;
 use tracing::error;
 use uuid::Uuid;
 
@@ -14,16 +16,12 @@ use super::{
 };
 
 #[tracing::instrument(skip(state))]
-pub(crate) async fn list(
-    State(state): State<AppState>,
-) -> Result<Json<Vec<Sample>>, StatusCode> {
+pub(crate) async fn list(State(state): State<AppState>) -> ApiResponse {
     match Sample::list(&*state.pool).await {
-        Ok(samples) => {
-            Ok(Json(samples))
-        }
+        Ok(samples) => ApiResponse::ok(json!(samples)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::list");
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
+            ApiResponse::err(err.into())
         }
     }
 }
@@ -32,12 +30,12 @@ pub(crate) async fn list(
 pub(crate) async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreateSample>,
-) -> Result<Json<Sample>, StatusCode> {
+) -> ApiResponse {
     match Sample::create(&*state.pool, body).await {
-        Ok(sample) => Ok(Json(sample)),
+        Ok(sample) => ApiResponse::ok(json!(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::create");
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
+            ApiResponse::err(err.into())
         }
     }
 }
@@ -46,12 +44,17 @@ pub(crate) async fn create(
 pub(crate) async fn read(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-) -> Result<Json<Sample>, StatusCode> {
+) -> ApiResponse {
     match Sample::read(&*state.pool, &id).await {
-        Ok(sample) => Ok(Json(sample)),
+        Ok(sample) => ApiResponse::ok(json!(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::read");
-            Err(StatusCode::NOT_FOUND)
+            // If the error is rows not found, return a 404 instead
+            match err {
+                sqlx::Error::RowNotFound => ApiResponse::err(ApiError::NotFound.into()),
+                other => ApiResponse::err(other.into())
+            }
+
         }
     }
 }
@@ -61,15 +64,15 @@ pub(crate) async fn update(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(body): Json<UpdateSample>,
-) -> Result<Json<Sample>, StatusCode> {
+) -> ApiResponse {
     // TODO
     // 200/204 for updating an existing resource
     // 201 if a new user is created
     match Sample::update(&*state.pool, &id, body).await {
-        Ok(sample) => Ok(Json(sample)),
+        Ok(sample) => ApiResponse::ok(json!(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::update");
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
+            ApiResponse::err(err.into())
         }
     }
 }

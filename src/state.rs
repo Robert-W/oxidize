@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use sqlx::{Pool, Postgres};
+use std::sync::Arc;
 
 use crate::db::postgres;
 
@@ -12,6 +12,8 @@ impl AppState {
     pub async fn new() -> anyhow::Result<AppState> {
         let pool = postgres::create_pool().await?;
 
-        Ok(AppState { pool: Arc::new(pool) })
+        Ok(AppState {
+            pool: Arc::new(pool),
+        })
     }
 }

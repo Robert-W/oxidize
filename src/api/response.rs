@@ -6,7 +6,8 @@
 ///
 /// see https://github.com/bubblegroup/heimdall/pull/81/files#diff-3ffcb125efa2c5870ce050e19274feb0935ed9056e89546d2dcb1848773c1bc4
 use axum::{
-    http::StatusCode, response::{IntoResponse, Response}
+    http::StatusCode,
+    response::{IntoResponse, Response},
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -20,12 +21,13 @@ pub enum ApiResponse {
     Err { error: ServiceError },
 }
 
-impl From<Result<Value, ServiceError>> for ApiResponse {
-    fn from(value: Result<Value, ServiceError>) -> Self {
-        match value {
-            Ok(result) => ApiResponse::Ok { result },
-            Err(error) => ApiResponse::Err { error },
-        }
+impl ApiResponse {
+    pub fn ok(result: Value) -> Self {
+        ApiResponse::Ok { result }
+    }
+
+    pub fn err(error: ServiceError) -> Self {
+        ApiResponse::Err { error }
     }
 }
 
@@ -59,14 +61,14 @@ impl From<ApiError> for ServiceError {
     fn from(value: ApiError) -> Self {
         ServiceError {
             status_code: value.status_code(),
-            message: value.to_string()
+            message: value.to_string(),
         }
     }
 }
 
 impl IntoResponse for ServiceError {
     fn into_response(self) -> Response {
-        let result = ApiResponse::from(Err(self));
+        let result = ApiResponse::err(self);
 
         result.into_response()
     }
