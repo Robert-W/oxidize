@@ -15,7 +15,7 @@ pub async fn run() -> ExitCode {
     };
 
     // Run migrations against our database
-    if let Err(err) = sqlx::migrate!().run(&app_state.pool).await {
+    if let Err(err) = sqlx::migrate!().run(&*app_state.pool).await {
         tracing::error!({ exception.message = %err }, "Failure to run migrations");
         return ExitCode::FAILURE;
     }

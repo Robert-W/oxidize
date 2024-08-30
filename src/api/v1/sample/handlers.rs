@@ -17,7 +17,7 @@ use super::{
 pub(crate) async fn list(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<Sample>>, StatusCode> {
-    match Sample::list(&state.pool).await {
+    match Sample::list(&*state.pool).await {
         Ok(samples) => {
             Ok(Json(samples))
         }
@@ -33,7 +33,7 @@ pub(crate) async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreateSample>,
 ) -> Result<Json<Sample>, StatusCode> {
-    match Sample::create(&state.pool, body).await {
+    match Sample::create(&*state.pool, body).await {
         Ok(sample) => Ok(Json(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::create");
@@ -47,7 +47,7 @@ pub(crate) async fn read(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Sample>, StatusCode> {
-    match Sample::read(&state.pool, &id).await {
+    match Sample::read(&*state.pool, &id).await {
         Ok(sample) => Ok(Json(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::read");
@@ -65,7 +65,7 @@ pub(crate) async fn update(
     // TODO
     // 200/204 for updating an existing resource
     // 201 if a new user is created
-    match Sample::update(&state.pool, &id, body).await {
+    match Sample::update(&*state.pool, &id, body).await {
         Ok(sample) => Ok(Json(sample)),
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::update");
@@ -76,7 +76,7 @@ pub(crate) async fn update(
 
 #[tracing::instrument(skip(state))]
 pub(crate) async fn delete(Path(id): Path<Uuid>, State(state): State<AppState>) -> StatusCode {
-    match Sample::delete(&state.pool, &id).await {
+    match Sample::delete(&*state.pool, &id).await {
         Ok(_) => StatusCode::NO_CONTENT,
         Err(err) => {
             error!({ exception.message = %err }, "Unexpected error on Sample::delete");
