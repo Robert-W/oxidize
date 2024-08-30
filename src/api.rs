@@ -1,3 +1,5 @@
+mod errors;
+mod response;
 mod v1;
 
 use crate::observability::otel;
