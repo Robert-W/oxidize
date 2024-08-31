@@ -1,10 +1,3 @@
-/// This defines the response format that all of our API endpoints will use
-/// It enforces outcomes to conform to one of the following formats:
-///
-/// Success: { status: 'Ok', result: T }
-/// Error: { status: 'Err', error: ServiceError }
-///
-/// see https://github.com/bubblegroup/heimdall/pull/81/files#diff-3ffcb125efa2c5870ce050e19274feb0935ed9056e89546d2dcb1848773c1bc4
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -14,6 +7,11 @@ use serde_json::Value;
 
 use super::errors::ApiError;
 
+/// This defines the response format that all of our API endpoints will use
+/// It enforces outcomes to conform to one of the following formats:
+///
+/// Success: { status: 'Ok', result: T }
+/// Error: { status: 'Err', error: ServiceError }
 #[derive(Debug, Serialize)]
 #[serde(tag = "status")]
 pub enum ApiResponse {
@@ -22,10 +20,12 @@ pub enum ApiResponse {
 }
 
 impl ApiResponse {
+    /// Use `ApiResponse::ok` to create a successful ApiResponse
     pub fn ok(result: Value) -> Self {
         ApiResponse::Ok { result }
     }
 
+    /// Use `ApiResponse::err` to create a failure ApiResponse
     pub fn err(error: ServiceError) -> Self {
         ApiResponse::Err { error }
     }
@@ -44,6 +44,9 @@ impl IntoResponse for ApiResponse {
     }
 }
 
+/// Stucture of the response created when using `ApiResponse::err`
+/// status_code is just used to determine the approriate status for your error
+/// see ./errors.rs, `enum ApiError` to add more variants.
 #[derive(Debug, Serialize)]
 pub struct ServiceError {
     #[serde(skip)]
