@@ -1,38 +1,25 @@
+mod api;
 mod db;
-mod endpoints;
-mod subscribers;
+mod observability;
+mod server;
+mod state;
 
-use actix_web::{main, web, App, HttpServer};
-use db::postgres;
+use std::process::ExitCode;
+
 use dotenvy::dotenv;
 
-#[main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> ExitCode {
     // Load our environment variables
     dotenv().ok();
 
-    // Initialize tracing
-    tracing::subscriber::set_global_default(subscribers::all()).unwrap();
+    // Initialize tracing and logging
+    observability::init();
 
-    // Connect to our database
-    let pg_conn_string = postgres::get_connection_string();
-    let pool = postgres::create_pool(&pg_conn_string)
-        .await
-        .expect("Unable to connect to postgres");
+    let exit_code = server::run().await;
 
-    // Run migrations with out datbase
-    sqlx::migrate!()
-        .run(&pool)
-        .await
-        .expect("Migrations failed to run");
+    // Perform any cleanup
+    opentelemetry::global::shutdown_tracer_provider();
 
-    // Create our HTTP server
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(pool.clone()))
-            .configure(endpoints::configure)
-    })
-    .bind(("0.0.0.0", 3000))?
-    .run()
-    .await
+    exit_code
 }

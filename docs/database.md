@@ -1,17 +1,15 @@
-# Database things
+# Database
 
 ## Creating a migration
-
-From root, run:
-
 ```bash
 sqlx migrate add <migration-name>
 ```
 
 ## Creating a fixture for tests
-
-From root, run:
-
 ```bash
-sqlx migrate add --source test/fixtures <migration-name>
+sqlx migrate add --source tests/fixtures -r <migration-name>
 ```
+
+This will create up and down migrations. You should use something like
+`TRUNCATE <table-name>;` in your down migration to reset the data created for
+and by your tests.

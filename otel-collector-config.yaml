@@ -1,0 +1,16 @@
+# See https://github.com/open-telemetry/opentelemetry-collector
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug]
