@@ -1,11 +1,11 @@
 use opentelemetry::{propagation::TextMapCompositePropagator, trace::TracerProvider};
 use opentelemetry_otlp::{Compression, SpanExporter, WithExportConfig, WithHttpConfig};
 use opentelemetry_sdk::{
+    Resource,
     propagation::{BaggagePropagator, TraceContextPropagator},
     trace::{BatchConfigBuilder, BatchSpanProcessor, SdkTracerProvider},
-    Resource,
 };
-use tracing_subscriber::{prelude::*, EnvFilter, Layer, Registry};
+use tracing_subscriber::{EnvFilter, Layer, Registry, prelude::*};
 
 use crate::{constants, monitoring::tags::get_default_tags};
 
@@ -32,8 +32,8 @@ impl Providers {
 
         // Create a logging layer to connect logging to tracing macros
         let layers = vec![
-            create_logging_layer(),
             create_tracing_layer(tracing_provider.clone()),
+            create_logging_layer(),
         ];
 
         tracing_subscriber::registry().with(layers).init();
@@ -91,9 +91,7 @@ fn create_tracing_provider(collector_url: String) -> SdkTracerProvider {
 }
 
 fn create_tracing_layer(provider: SdkTracerProvider) -> Box<dyn Layer<Registry> + Send + Sync> {
-    let filter = format!("{}={}", constants::SERVICE_NAME, "TRACE")
-        .parse::<EnvFilter>()
-        .unwrap();
+    let filter = "TRACE".parse::<EnvFilter>().unwrap();
 
     tracing_opentelemetry::layer()
         .with_tracer(provider.tracer(constants::SERVICE_NAME))
