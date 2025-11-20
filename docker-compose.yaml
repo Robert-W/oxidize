@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql
   otel-collector:
     image: otel/opentelemetry-collector:latest
     command: ["--config=/etc/otel-collector-config.yaml"]
@@ -20,6 +20,7 @@ services:
       - "1888:1888"   # pprof extension
       - "13133:13133" # health_check extension
       - "4317:4317"   # OTLP gRPC receiver
-      - "55670:55679" # zpages extension
+      - "4318:4318"   # OTLP http receiver
+      - "55679:55679" # zpages extension
 volumes:
   db:

@@ -1,6 +1,7 @@
 mod api;
+mod constants;
 mod db;
-mod observability;
+mod monitoring;
 mod server;
 mod state;
 
@@ -14,12 +15,12 @@ async fn main() -> ExitCode {
     dotenv().ok();
 
     // Initialize tracing and logging
-    observability::init();
+    monitoring::init().await;
 
     let exit_code = server::run().await;
 
     // Perform any cleanup
-    opentelemetry::global::shutdown_tracer_provider();
+    monitoring::shutdown();
 
     exit_code
 }

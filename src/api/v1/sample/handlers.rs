@@ -41,10 +41,7 @@ pub(crate) async fn create(
 }
 
 #[tracing::instrument(skip(state))]
-pub(crate) async fn read(
-    State(state): State<AppState>,
-    Path(id): Path<Uuid>,
-) -> ApiResponse {
+pub(crate) async fn read(State(state): State<AppState>, Path(id): Path<Uuid>) -> ApiResponse {
     match Sample::read(&*state.pool, &id).await {
         Ok(sample) => ApiResponse::ok(json!(sample)),
         Err(err) => {
@@ -52,9 +49,8 @@ pub(crate) async fn read(
             // If the error is rows not found, return a 404 instead
             match err {
                 sqlx::Error::RowNotFound => ApiResponse::err(ApiError::NotFound.into()),
-                other => ApiResponse::err(other.into())
+                other => ApiResponse::err(other.into()),
             }
-
         }
     }
 }

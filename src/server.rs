@@ -1,6 +1,6 @@
 use std::process::ExitCode;
 
-use tokio::net::TcpListener;
+use tokio::{net::TcpListener, signal};
 
 use crate::{api, state::AppState};
 
@@ -31,11 +31,38 @@ pub async fn run() -> ExitCode {
     };
 
     tracing::info!("Server listening on 0.0.0.0:3000");
-    match axum::serve(listener, router).await {
+    match axum::serve(listener, router)
+        .with_graceful_shutdown(shutdown_signals())
+        .await
+    {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
             tracing::error!({ exception.message = %err }, "Failure to start server");
             ExitCode::FAILURE
         }
+    }
+}
+
+async fn shutdown_signals() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
     }
 }

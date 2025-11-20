@@ -12,7 +12,7 @@ pub(crate) fn routes() -> Router<AppState> {
     Router::new()
         .route("/", get(handlers::list))
         .route("/", post(handlers::create))
-        .route("/:id", get(handlers::read))
-        .route("/:id", put(handlers::update))
-        .route("/:id", delete(handlers::delete))
+        .route("/{id}", get(handlers::read))
+        .route("/{id}", put(handlers::update))
+        .route("/{id}", delete(handlers::delete))
 }
