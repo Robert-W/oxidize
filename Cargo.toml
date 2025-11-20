@@ -1,7 +1,7 @@
 [package]
 name = "oxidize"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [[bin]]
 path = "src/main.rs"
@@ -20,7 +20,7 @@ opentelemetry-semantic-conventions = "0.31.0"
 opentelemetry_sdk = "0.31.0"
 serde = "1.0.195"
 serde_json = "1.0.111"
-sqlx = { version = "0.7.3", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
+sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
 thiserror = "1.0.63"
 tokio = { version = "1.48.0", features = ["full"] }
 tower = "0.5.2"
