@@ -37,7 +37,8 @@ impl Providers {
             create_logging_layer(),
         ];
 
-        tracing_subscriber::registry().with(layers).init();
+        let subscribers = Registry::default().with(layers);
+        tracing::subscriber::set_global_default(subscribers).unwrap();
 
         Self {
             tracer: tracing_provider,
@@ -94,7 +95,9 @@ fn create_tracing_provider(collector_url: String) -> SdkTracerProvider {
 fn create_tracing_layer(
     tracing_provider: SdkTracerProvider,
 ) -> Box<dyn Layer<Registry> + Send + Sync> {
-    let filter = "TRACE".parse::<EnvFilter>().unwrap();
+    let filter = format!("{}=TRACE", constants::SERVICE_NAME)
+        .parse::<EnvFilter>()
+        .unwrap();
 
     OpenTelemetryLayer::new(tracing_provider.tracer(constants::SERVICE_NAME))
         .with_filter(filter)
