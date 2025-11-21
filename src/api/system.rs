@@ -6,7 +6,6 @@ pub async fn health() -> StatusCode {
 }
 
 // Readiness check to ensure the system is ready to take requests
-#[tracing::instrument()]
 pub async fn ready() -> StatusCode {
     StatusCode::OK
 }

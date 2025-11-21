@@ -5,6 +5,7 @@ use opentelemetry_sdk::{
     propagation::{BaggagePropagator, TraceContextPropagator},
     trace::{BatchConfigBuilder, BatchSpanProcessor, SdkTracerProvider},
 };
+use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::{EnvFilter, Layer, Registry, prelude::*};
 
 use crate::{constants, monitoring::tags::get_default_tags};
@@ -90,11 +91,12 @@ fn create_tracing_provider(collector_url: String) -> SdkTracerProvider {
     provider
 }
 
-fn create_tracing_layer(provider: SdkTracerProvider) -> Box<dyn Layer<Registry> + Send + Sync> {
+fn create_tracing_layer(
+    tracing_provider: SdkTracerProvider,
+) -> Box<dyn Layer<Registry> + Send + Sync> {
     let filter = "TRACE".parse::<EnvFilter>().unwrap();
 
-    tracing_opentelemetry::layer()
-        .with_tracer(provider.tracer(constants::SERVICE_NAME))
+    OpenTelemetryLayer::new(tracing_provider.tracer(constants::SERVICE_NAME))
         .with_filter(filter)
         .boxed()
 }
